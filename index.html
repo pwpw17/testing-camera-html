@@ -3,42 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kamera + Timestamp</title>
+  <title>Kamera dengan Timestamp & Ganti Kamera</title>
 </head>
 <body>
 
   <h2>Ambil Foto dengan Timestamp</h2>
 
-  <video id="video" autoplay playsinline width="100%" height="auto"></video>
+  <video id="video" autoplay playsinline width="100%" height="auto" style="max-width: 400px;"></video>
   <canvas id="canvas" style="display: none;"></canvas>
+
   <br>
   <button onclick="takePhoto()">Ambil Foto</button>
-  <br>
-  <img id="photo" alt="Hasil Foto" width="100%" />
+  <button onclick="switchCamera()">Ganti Kamera</button>
+
+  <br><br>
+  <img id="photo" alt="Hasil Foto" width="100%" style="max-width: 400px;" />
 
   <script>
+    let currentFacingMode = "environment"; // default: kamera belakang
+    let stream = null;
+
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const photo = document.getElementById('photo');
 
-    // Akses kamera
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
+    async function startCamera(facingMode) {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop()); // stop stream lama
+      }
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode } },
+          audio: false
+        });
         video.srcObject = stream;
-      })
-      .catch(err => {
+      } catch (err) {
+        console.error(err);
         alert("Tidak bisa mengakses kamera: " + err.message);
-      });
+      }
+    }
 
     function takePhoto() {
       const ctx = canvas.getContext('2d');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // Gambar dari video ke canvas
       ctx.drawImage(video, 0, 0);
 
-      // Tambahkan timestamp
       const timestamp = new Date().toLocaleString();
       ctx.font = '24px Arial';
       ctx.fillStyle = 'white';
@@ -47,9 +59,16 @@
       ctx.strokeText(timestamp, 10, canvas.height - 20);
       ctx.fillText(timestamp, 10, canvas.height - 20);
 
-      // Tampilkan hasil
       photo.src = canvas.toDataURL('image/png');
     }
+
+    function switchCamera() {
+      currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
+      startCamera(currentFacingMode);
+    }
+
+    // Jalankan kamera saat pertama kali
+    startCamera(currentFacingMode);
   </script>
 
 </body>

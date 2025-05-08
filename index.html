@@ -4,12 +4,54 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kamera HP dengan Timestamp</title>
+  
+  <!-- Menambahkan Font Awesome CDN -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+  
+  <style>
+    /* Sembunyikan input asli */
+    #file-input {
+      display: none;
+    }
+
+    /* Desain tombol kustom */
+    .custom-btn {
+      background-color: #4CAF50;
+      color: white;
+      font-size: 18px;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .custom-btn:hover {
+      background-color: #45a049;
+    }
+
+    .custom-btn i {
+      margin-right: 8px;
+    }
+
+    .custom-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
 </head>
 <body>
 
   <h2>Ambil Foto dengan Timestamp</h2>
 
+  <!-- Tombol custom -->
+  <label for="file-input" class="custom-btn">
+    <i class="fas fa-camera"></i> Take Picture
+  </label>
   <input type="file" id="file-input" accept="image/*" capture="camera" />
+  
   <canvas id="canvas" style="display: none;"></canvas>
   <br>
   <img id="photo" alt="Hasil Foto" width="100%" style="max-width: 400px;" />
@@ -36,16 +78,17 @@
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
 
-          // Tambahkan timestamp
+          // Menambahkan timestamp
           const timestamp = new Date().toLocaleString();
-          ctx.font = '24px Arial';
+          const fontSize = Math.floor(img.height / 15); // Ukuran font lebih besar sesuai resolusi
+          ctx.font = `${fontSize}px Arial`;
           ctx.fillStyle = 'white';
           ctx.strokeStyle = 'black';
           ctx.lineWidth = 2;
-          ctx.strokeText(timestamp, 10, canvas.height - 20);
-          ctx.fillText(timestamp, 10, canvas.height - 20);
+          ctx.strokeText(timestamp, 10, canvas.height - fontSize);
+          ctx.fillText(timestamp, 10, canvas.height - fontSize);
 
-          // Tampilkan hasil
+          // Tampilkan hasil foto
           photo.src = canvas.toDataURL('image/png');
         };
       };

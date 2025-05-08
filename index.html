@@ -3,72 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kamera dengan Timestamp & Ganti Kamera</title>
+  <title>Kamera HP dengan Timestamp</title>
 </head>
 <body>
 
   <h2>Ambil Foto dengan Timestamp</h2>
 
-  <video id="video" autoplay playsinline width="100%" height="auto" style="max-width: 400px;"></video>
+  <input type="file" id="file-input" accept="image/*" capture="camera" />
   <canvas id="canvas" style="display: none;"></canvas>
-
   <br>
-  <button onclick="takePhoto()">Ambil Foto</button>
-  <button onclick="switchCamera()">Ganti Kamera</button>
-
-  <br><br>
   <img id="photo" alt="Hasil Foto" width="100%" style="max-width: 400px;" />
 
   <script>
-    let currentFacingMode = "environment"; // default: kamera belakang
-    let stream = null;
-
-    const video = document.getElementById('video');
+    const fileInput = document.getElementById('file-input');
     const canvas = document.getElementById('canvas');
     const photo = document.getElementById('photo');
 
-    async function startCamera(facingMode) {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop()); // stop stream lama
-      }
+    // Saat file foto diambil
+    fileInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: facingMode } },
-          audio: false
-        });
-        video.srcObject = stream;
-      } catch (err) {
-        console.error(err);
-        alert("Tidak bisa mengakses kamera: " + err.message);
-      }
-    }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
 
-    function takePhoto() {
-      const ctx = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+        img.onload = function() {
+          // Gambar ke canvas
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
 
-      ctx.drawImage(video, 0, 0);
+          // Tambahkan timestamp
+          const timestamp = new Date().toLocaleString();
+          ctx.font = '24px Arial';
+          ctx.fillStyle = 'white';
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 2;
+          ctx.strokeText(timestamp, 10, canvas.height - 20);
+          ctx.fillText(timestamp, 10, canvas.height - 20);
 
-      const timestamp = new Date().toLocaleString();
-      ctx.font = '24px Arial';
-      ctx.fillStyle = 'white';
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.strokeText(timestamp, 10, canvas.height - 20);
-      ctx.fillText(timestamp, 10, canvas.height - 20);
-
-      photo.src = canvas.toDataURL('image/png');
-    }
-
-    function switchCamera() {
-      currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-      startCamera(currentFacingMode);
-    }
-
-    // Jalankan kamera saat pertama kali
-    startCamera(currentFacingMode);
+          // Tampilkan hasil
+          photo.src = canvas.toDataURL('image/png');
+        };
+      };
+      reader.readAsDataURL(file);
+    });
   </script>
 
 </body>
